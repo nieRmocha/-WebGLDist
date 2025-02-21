@@ -1,4 +1,3 @@
-
 // Global constants
 const canvas = document.getElementById('glCanvas'); // Get the canvas element 
 const gl = canvas.getContext('webgl2'); // Get the WebGL2 context
