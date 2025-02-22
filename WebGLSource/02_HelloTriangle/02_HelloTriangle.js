@@ -7,8 +7,10 @@ if (!gl) {
 }
 
 // Set canvas size (using current browser's size)
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+//canvas.width = window.innerWidth;
+//canvas.height = window.innerHeight;
+canvas.width = 500;
+canvas.height = 500;
 
 // Resize viewport when window size changes (without keeping the aspect ratio)
 window.addEventListener('resize', () => {
