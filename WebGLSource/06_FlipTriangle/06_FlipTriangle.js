@@ -14,9 +14,7 @@ let shader;
 let vao;
 let colorTag = "red";
 let verticalFlip = 1.0; // 1.0 for normal, -1.0 for vertical flip
-let textOverlay;  // for text output (see util.js)
-let textOverlay2; // for text output (second line)
-let textOverlay3; // for text output (third line)
+let textOverlay3; // for text output third line (see util.js)
 
 function initWebGL() {
     if (!gl) {
@@ -121,8 +119,8 @@ async function main() {
         shader = await initShader();
 
         // setup text overlay (see util.js)
-        textOverlay = setupText(canvas, "r, g, b: change color", 1);
-        textOverlay2 = setupText(canvas, "f: flip vertically", 2);
+        setupText(canvas, "r, g, b: change color", 1);
+        setupText(canvas, "f: flip vertically", 2);
         textOverlay3 = setupText(canvas, "no key pressed", 3);
 
         // 키보드 이벤트 설정

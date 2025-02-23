@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    main().then(success => {
+    main().then(success => { // call main function
         if (!success) {
             console.log('프로그램을 종료합니다.');
             return;
@@ -86,7 +86,7 @@ function setupBuffers(shader) {
 
 // 좌표 변환 함수: 캔버스 좌표를 WebGL 좌표로 변환
 // 캔버스 좌표: 캔버스 좌측 상단이 (0, 0), 우측 하단이 (canvas.width, canvas.height)
-// WebGL 좌표: 캔버스 좌측 상단이 (-1, 1), 우측 하단이 (1, -1)
+// WebGL 좌표 (NDC): 캔버스 좌측 상단이 (-1, 1), 우측 하단이 (1, -1)
 function convertToWebGLCoordinates(x, y) {
     return [
         (x / canvas.width) * 2 - 1,
@@ -95,47 +95,53 @@ function convertToWebGLCoordinates(x, y) {
 }
 
 /* 
-    browser window (viewport)
-    +--------------------------------+
-    |                                |
-    |     canvas                     |
-    |     +----------------+         |
-    |     |                |         |
-    |     |      *         |         | 
-    |     |                |         |
-    |     +----------------+         |
-    |                                |
-    +--------------------------------+
+    browser window
+    +----------------------------------------+
+    | toolbar, address bar, etc.             |
+    +----------------------------------------+
+    | browser viewport (컨텐츠 표시 영역)       | 
+    | +------------------------------------+ |
+    | |                                    | |
+    | |    canvas                          | |
+    | |    +----------------+              | |
+    | |    |                |              | |
+    | |    |      *         |              | |
+    | |    |                |              | |
+    | |    +----------------+              | |
+    | |                                    | |
+    | +------------------------------------+ |
+    +----------------------------------------+
 
     *: mouse click position
 
-    event.clientX = distance from left side of viewport to click position
-    event.clientY = distance from top side of viewport to click position
-    rect.left = distance from left side of canvas to click position
-    rect.top = distance from top side of canvas to click position
+    event.clientX = browser viewport 왼쪽 경계에서 마우스 클릭 위치까지의 거리
+    event.clientY = browser viewport 상단 경계에서 마우스 클릭 위치까지의 거리
+    rect.left = browser viewport 왼쪽 경계에서 canvas 왼쪽 경계까지의 거리
+    rect.top = browser viewport 상단 경계에서 canvas 상단 경계까지의 거리
 
-    x = event.clientX - rect.left  // x coord. of click position in canvas
-    y = event.clientY - rect.top   // y coord. of click position in canvas
+    x = event.clientX - rect.left  // canvas 내에서의 클릭 x 좌표
+    y = event.clientY - rect.top   // canvas 내에서의 클릭 y 좌표
 */
 
 function setupMouseEvents() {
     function handleMouseDown(event) {
-        event.preventDefault();
-        event.stopPropagation();
+        event.preventDefault(); // 존재할 수 있는 기본 동작을 방지
+        event.stopPropagation(); // event가 상위 요소로 전파되지 않도록 방지
 
         const rect = canvas.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
         
-        if (!isDrawing) {
+        if (!isDrawing) { // 1번 또는 2번 선분을 그리고 있는 도중이 아닌 경우
+            // 캔버스 좌표를 WebGL 좌표로 변환하여 선분의 시작점을 설정
             let [glX, glY] = convertToWebGLCoordinates(x, y);
             startPoint = [glX, glY];
-            isDrawing = true;
+            isDrawing = true; // 이제 mouse button을 놓을 때까지 계속 true로 둠. 
         }
     }
 
     function handleMouseMove(event) {
-        if (isDrawing) {
+        if (isDrawing) { // 1번 또는 2번 선분을 그리고 있는 도중인 경우
             const rect = canvas.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
@@ -190,10 +196,10 @@ function render() {
     // 저장된 선들 그리기
     let num = 0;
     for (let line of lines) {
-        if (num == 0) {
+        if (num == 0) { // 첫 번째 선분인 경우, yellow
             shader.setVec4("u_color", [1.0, 1.0, 0.0, 1.0]);
         }
-        else { // num == 1 
+        else { // num == 1 또는 2번째 선분인 경우, red
             shader.setVec4("u_color", [1.0, 0.0, 1.0, 1.0]);
         }
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(line), gl.STATIC_DRAW);
@@ -204,8 +210,9 @@ function render() {
 
     // 임시 선 그리기
     if (isDrawing && startPoint && tempEndPoint) {
-        shader.setVec4("u_color", [0.5, 0.5, 0.5, 1.0]);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([...startPoint, ...tempEndPoint]), gl.STATIC_DRAW);
+        shader.setVec4("u_color", [0.5, 0.5, 0.5, 1.0]); // 임시 선분의 color는 회색
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([...startPoint, ...tempEndPoint]), 
+                      gl.STATIC_DRAW);
         gl.bindVertexArray(vao);
         gl.drawArrays(gl.LINES, 0, 2);
     }
