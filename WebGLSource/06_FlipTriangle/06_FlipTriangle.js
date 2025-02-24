@@ -142,8 +142,7 @@ async function main() {
     }
 }
 
-// 프로그램 시작
-
+// call main function
 main().then(success => {
     if (!success) {
         console.log('프로그램을 종료합니다.');
