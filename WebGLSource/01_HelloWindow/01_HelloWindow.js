@@ -13,15 +13,6 @@ canvas.height = 500;
 // Initialize WebGL settings: viewport and clear color
 gl.viewport(0, 0, canvas.width, canvas.height);
 
-
-
-
-
-
-
-
-
-
 // Start rendering
 render();
 
